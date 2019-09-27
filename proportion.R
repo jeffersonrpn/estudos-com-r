@@ -18,21 +18,19 @@ ethnicity_gender <- conferences %>%
   inner_join(ethnicity, by = "full_name") %>% 
   select("conf_key", "year", "conf_title", "paper_title", "full_name", "l0", "l1" ,"l2")
 
-
-# ethnicity_conferences <- ethnicity_gender %>% 
-#   group_by(conf_title, l1, l2) %>% 
-#   summarise(ethnicity_count = n()) %>% 
-#   mutate(ethnicity = str_c(l1, ifelse(l2 == "\\N", "", str_c(" ", l2))))
-
 ethnicity_conferences <- ethnicity_gender %>%
   group_by(conf_title, l1) %>%
   summarise(ethnicity_count = n())
 
 ethnicity_porportion <- ethnicity_conferences %>% 
   group_by(conf_title) %>% 
-  mutate(conference_count = sum(ethnicity_count), proportion = ethnicity_count / conference_count) %>% 
+  mutate(conference_count = sum(ethnicity_count), 
+         proportion = ethnicity_count / conference_count, 
+         homogeneity = sd(proportion)) %>% 
   filter(conference_count >= 1000) %>% 
-  select(conf_title, l1, proportion)
-names(ethnicity_porportion) = c("conference", "ethnicity", "proportion")
+  arrange(desc(proportion)) %>% 
+  select(conf_title, l1, ethnicity_count, proportion, homogeneity)  
+  
+names(ethnicity_porportion) = c("conference", "ethnicity", "count", "proportion", "homogeneity")
 
 write_csv(ethnicity_porportion, "ethnicity_proportion_on_computer_science_conferences.csv")
