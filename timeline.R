@@ -22,13 +22,14 @@ ethnicity_by_year <- ethnicity_gender %>%
   group_by(year, l1) %>%
   summarise(ethnicity_count = n())
 
-names(ethnicity_by_year) =  c("year", "ethnicity", "count")
+names(ethnicity_by_year) =  c("year", "ethnicity", "ethnicity_count")
 
-# ethnicity_by_year <- ethnicity_conferences %>% 
-#   group_by(conf_title) %>% 
-#   mutate(conference_count = sum(ethnicity_count), proportion = ethnicity_count / conference_count) %>% 
-#   filter(conference_count >= 1000) %>% 
-#   select(conf_title, l1, proportion)
-# names(ethnicity_porportion) = c("conference", "ethnicity", "proportion")
+ethnicity_by_year <- ethnicity_by_year %>%
+  group_by(year) %>%
+  mutate(year_count = sum(ethnicity_count), proportion = ethnicity_count / year_count) %>% 
+  # filter(year_count >= 1000) %>%
+  select(year, ethnicity, ethnicity_count, proportion)
+
+names(ethnicity_by_year) =  c("year", "ethnicity", "count", "proportion")
 
 write_csv(ethnicity_by_year, "ethnicity_by_year_on_computer_science_conferences.csv")
