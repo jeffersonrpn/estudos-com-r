@@ -11,21 +11,27 @@ names(gastos_por_partido) = c("partido", "totalGasto")
 write_csv(gastos_por_partido, "total_gastos_por_partido.csv")
 
 
+# --------------------------------
 library(jsonlite)
 
 gastos_por_municipio <- gastos %>% 
   group_by(SG_PARTIDO, NM_MUNICIPIO) %>% 
   summarise(totalGasto = sum(VR_GASTO)) %>% 
+  ungroup() %>% 
   filter(totalGasto > 5000) %>% 
-  filter(NM_MUNICIPIO != '#NULO#')
+  filter(NM_MUNICIPIO != '#NULO#') %>% 
+  select(partido = SG_PARTIDO, municipio = NM_MUNICIPIO, totalGasto)
 
-names(gastos_por_municipio) = c("partido", "municipio", "totalGasto")
+gastos_por_municipio_filtrado <- gastos_por_municipio %>% 
+  distinct(partido)
 
-lista_partidos_municipios <- data.frame(name = gastos_por_municipio$partido,
-                                  children = data.frame(name = gastos_por_municipio$municipio, 
-                                                  value = gastos_por_municipio$totalGasto))
+lista_partidos_municipios <- as.list(t(gastos_por_municipio_filtrado$partido)) %>% 
+  map(function(x) {
+    lista <- gastos_por_municipio %>% 
+      filter(partido == x) %>% 
+      select(municipio, totalGasto)
+    retorno <- list(name = x, children = as.data.frame(lista))
+    return(retorno)
+  })
 
-toJSON(lista_partidos_municipios)
-
-write_csv(gastos_por_municipio, "total_gastos_por_municipio_partido.csv")
-
+write_json(lista_partidos_municipios, "gastos_por_municipio.json")
